@@ -145,7 +145,25 @@ function (_Component) {
       data: [],
       isActiveCheck: '',
       needIsActiveCheck: false,
-      childrensOpenId: null
+      childrensOpenId: {}
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "parentHaveChildrensCheck", function (parent) {
+      var openButtonDisplay = false;
+
+      switch (true) {
+        case !_this.state.needIsActiveCheck:
+          openButtonDisplay = parent.hasOwnProperty('childrens');
+          break;
+
+        case _this.state.needIsActiveCheck:
+          openButtonDisplay = parent.hasOwnProperty('childrens') && parent.childrens.filter(function (item) {
+            return item.isActive == true;
+          }).length != 0;
+          break;
+      }
+
+      return openButtonDisplay;
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "checkIsActiveCheck", function (isActiveArg) {
@@ -154,31 +172,39 @@ function (_Component) {
     });
 
     _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "buildTree", function (array) {
-      var newTree = [];
-      array.map(function (parent) {
-        var _parent = parent;
-        var childId = parent.parentId;
-
-        switch (true) {
-          case childId == 0:
-            newTree.push(_parent);
-            break;
-
-          case childId !== 0:
-            newTree.find(function (item) {
-              console.log('child');
-
-              if (item.id == childId) {
-                item.hasOwnProperty('childrens') ? '' : item.childrens = [];
-                item.childrens.push(_parent);
-              }
-            });
-            break;
+      var tree = [];
+      array.forEach(function (item) {
+        item.parentId == 0 && tree.push(item);
+      });
+      array.forEach(function (item) {
+        if (item.parentId != 0) {
+          tree.find(function (parent) {
+            if (parent.id == item.parentId) {
+              parent.hasOwnProperty('childrens') ? '' : parent.childrens = [];
+              parent.childrens.push(item);
+            }
+          });
         }
       });
+      array.forEach(function (item) {
+        chilcrensCheck(item);
+      });
+
+      function chilcrensCheck(seniorChildren) {
+        tree.forEach(function (item) {
+          if (item.hasOwnProperty('childrens')) {
+            item.childrens.find(function (parent) {
+              if (parent.id == seniorChildren.parentId) {
+                parent.hasOwnProperty('childrens') ? '' : parent.childrens = [];
+                parent.childrens.push(seniorChildren);
+              }
+            });
+          }
+        });
+      }
 
       _this.setState({
-        data: newTree
+        data: tree
       });
     });
 
@@ -208,7 +234,8 @@ function (_Component) {
 
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         className: "root"
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+        className: this.state.needIsActiveCheck ? 'filterButton selected' : 'filterButton',
         onClick: function onClick() {
           _this3.state.needIsActiveCheck ? _this3.setState({
             needIsActiveCheck: false
@@ -216,39 +243,50 @@ function (_Component) {
             needIsActiveCheck: true
           });
         }
-      }, "filter"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
-        onClick: function onClick() {
-          console.log(_this3.state.data, '----', Array.isArray(_this3.state.data));
-        }
-      }, "TEST STATE"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
-        onClick: function onClick() {
-          console.log(_this3.state.data[2].childrens);
-        }
-      }, "TEST CHILD"), this.state.data.map(function (person) {
-        return _this3.checkIsActiveCheck(person.isActive) && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      }, this.state.needIsActiveCheck ? 'Отключить фильтр "isActive" ' : 'Включить фильтр "isActive"  ', " "), this.state.data.map(function (person) {
+        return _this3.checkIsActiveCheck(person.isActive) && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
           className: "person",
           key: person.id
         }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "person-parent"
         }, person.name, " | ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
           className: "parnet-balance"
-        }, person.balance)), person.hasOwnProperty('childrens') && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+        }, person.balance)), _this3.parentHaveChildrensCheck(person) && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("button", {
+          className: _this3.state.childrensOpenId.hasOwnProperty(person.id) ? 'openButton selected' : 'openButton',
           onClick: function onClick() {
-            _this3.state.childrensOpenId !== person.id ? _this3.setState({
-              childrensOpenId: person.id
-            }) : _this3.setState({
-              childrensOpenId: null
-            });
+            if (_this3.state.childrensOpenId.hasOwnProperty(person.id)) {
+              var openObj = _this3.state.childrensOpenId;
+              delete openObj[person.id];
+
+              _this3.setState({
+                childrensOpenId: openObj
+              });
+            } else {
+              var _openObj = _this3.state.childrensOpenId;
+              _openObj[person.id] = 'open';
+
+              _this3.setState({
+                childrensOpenId: _openObj
+              });
+            }
           }
-        }, _this3.state.childrensOpenId !== person.id ? ' Развернуть ' : ' Свернуть '), _this3.state.childrensOpenId == person.id && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        }, _this3.state.childrensOpenId.hasOwnProperty(person.id) ? 'Закрыть' : 'Открыть'), _this3.state.childrensOpenId.hasOwnProperty(person.id) && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
           className: "person-childrens"
-        }, person.hasOwnProperty('childrens') && person.childrens.map(function (child) {
-          return _this3.checkIsActiveCheck(child.isActive) && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-            className: "child",
-            key: child.id
-          }, child.name);
+        }, person.hasOwnProperty('childrens') && person.childrens.map(function (seniorChild) {
+          return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
+            key: seniorChild.id
+          }, _this3.checkIsActiveCheck(seniorChild.isActive) && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
+            className: "seniorChild"
+          }, seniorChild.name, " | ", seniorChild.balance, seniorChild.hasOwnProperty('childrens') && seniorChild.childrens.map(function (juniorChild) {
+            return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("ul", {
+              key: juniorChild.id
+            }, _this3.checkIsActiveCheck(juniorChild.isActive) && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("li", {
+              className: "juniorChild",
+              key: juniorChild.id
+            }, juniorChild.name, " | ", juniorChild.balance, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null)));
+          })));
         })));
-      }));
+      })));
     }
   }]);
 

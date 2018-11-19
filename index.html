@@ -6,19 +6,99 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <style>
         body{
-            font-family: Tahoma;  }
+            font-family: Arial;
+
+        }
+
+        li {
+            padding: 5px;
+        }
 
         .person {
-            margin-bottom: 10px;
-            font-size: 18px;
+            color: #005ea3;
+            font-size: 15px;
             font-weight: bold;
             border-bottom: dotted 1px darkgrey;
         }
-        .child {
-            margin-left: 15px;
-            color: indigo;
-            font-size: 15px;
+        .seniorChild {
+            margin-left: 10px;
+            color: #af1b1e;
+            font-size: 14px;
         }
+        .juniorChild{
+            margin-left: 15px;
+            color: #626262;
+        }
+
+        .filterButton{
+            border: 2px dotted;
+            border-color: #af1b1e;
+            color: #af1b1e;
+            border-radius: 5px;
+            background-color: white;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 10px 15px 0 0;
+        }
+        .filterButton:hover{
+            border: 2px dotted;
+            border-color: #af1b1e;
+            color: white;
+            border-radius: 5px;
+            background-color: #af1b1e;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filterButton.selected{
+            border: 2px dotted;
+            border-color: #af1b1e;
+            color: white;
+            border-radius: 5px;
+            background-color: #af1b1e;
+            cursor: pointer;
+        }
+
+
+
+
+        .openButton{
+             border: 2px dotted;
+             border-color: #005ea3;
+             color: #005ea3;
+             border-radius: 5px;
+             background-color: white;
+             padding: 5px 10px;
+             font-size: 14px;
+             cursor: pointer;
+             transition: all 0.2s;
+             margin: 10px 15px 0 0;
+        }
+
+        .openButton:hover{
+             border: dotted 2px #005ea3;
+             color: white;
+             border-radius: 5px;
+             background-color: #005ea3;
+             cursor: pointer;
+             transition: all 0.2s;
+         }
+
+        .openButton.selected{
+            border: dotted 2px #005ea3;
+            color: white;
+            border-radius: 5px;
+            background-color: #005ea3;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+
+
+
+
     </style>
     <title>MyReactApp</title>
 </head>

@@ -7,7 +7,8 @@ class PageComponent extends Component {
         data: [],
         isActiveCheck: '',
         needIsActiveCheck: false,
-        childrensOpenId: null
+        childrensOpenId: {}
+
     };
 
     getAllData() {
@@ -20,6 +21,24 @@ class PageComponent extends Component {
         this.getAllData()
     }
 
+    parentHaveChildrensCheck = (parent) => {
+
+        let openButtonDisplay = false;
+
+        switch (true) {
+            case(!this.state.needIsActiveCheck):
+                openButtonDisplay = parent.hasOwnProperty('childrens');
+                break;
+
+            case(this.state.needIsActiveCheck):
+                openButtonDisplay = parent.hasOwnProperty('childrens') &&
+                    parent.childrens.filter((item) => {return item.isActive == true}).length != 0
+                break;
+        }
+        return openButtonDisplay
+    };
+
+
     checkIsActiveCheck = (isActiveArg) => {
         let result = this.state.needIsActiveCheck ? isActiveArg : true;
         return result
@@ -28,80 +47,122 @@ class PageComponent extends Component {
 
     buildTree = (array) => {
 
-        let newTree = [];
+        let tree = [];
 
-        array.map((parent) => {
-            let _parent = parent;
-            let childId = parent.parentId;
+        array.forEach((item) => {
+            item.parentId == 0 && tree.push(item)
+        });
 
-            switch (true) {
-                case(childId == 0)  :
-                    newTree.push(_parent);
-                    break;
-
-                case(childId !== 0)  :
-                    newTree.find(
-                        (item) => {
-                            console.log('child');
-                            if (item.id == childId) {
-                                item.hasOwnProperty('childrens') ? '' : item.childrens = [];
-                                item.childrens.push(_parent)
-                            }
-                        });
-                    break;
+        array.forEach((item) => {
+            if (item.parentId != 0) {
+                tree.find((parent) => {
+                    if (parent.id == item.parentId) {
+                        parent.hasOwnProperty('childrens') ? '' : parent.childrens = []
+                        parent.childrens.push(item)
+                    }
+                })
             }
         });
 
-        this.setState({data: newTree})
+
+        array.forEach((item) => {
+            chilcrensCheck(item)
+        });
+
+        function chilcrensCheck(seniorChildren) {
+            tree.forEach((item) => {
+
+                if (item.hasOwnProperty('childrens')) {
+
+                    item.childrens.find((parent) => {
+                        if (parent.id == seniorChildren.parentId) {
+                            parent.hasOwnProperty('childrens') ? '' : parent.childrens = []
+                            parent.childrens.push(seniorChildren)
+                        }
+                    })
+                }
+            })
+
+        }
+
+
+        this.setState({data: tree})
     };
 
 
     render() {
         return (
             <div className="root">
-                <button onClick={()=>{this.state.needIsActiveCheck ? this.setState({needIsActiveCheck: false}): this.setState({needIsActiveCheck: true})}}>filter</button>
-                <button onClick={() => {
-                    console.log(this.state.data, '----', Array.isArray(this.state.data))
-                }}>TEST STATE
-                </button>
-                <button onClick={() => {
-                    console.log(this.state.data[2].childrens)
-                }}>TEST CHILD
-                </button>
 
-                {this.state.data.map((person) => (
 
-                        this.checkIsActiveCheck(person.isActive) && <div className="person" key={person.id}>
+                <ul>
+
+                    <button className={this.state.needIsActiveCheck ? 'filterButton selected' : 'filterButton'} onClick={() => {
+                        this.state.needIsActiveCheck ? this.setState({needIsActiveCheck: false}) : this.setState({needIsActiveCheck: true})
+                    }}>{this.state.needIsActiveCheck ? 'Отключить фильтр "isActive" ' : 'Включить фильтр "isActive"  '} </button>
+
+                    {this.state.data.map((person) => (
+                        this.checkIsActiveCheck(person.isActive) &&
+                        <li className="person" key={person.id}>
                             <div className="person-parent">{person.name} | <span
                                 className="parnet-balance">{person.balance}</span></div>
+                            {
+                                this.parentHaveChildrensCheck(person) &&
+                                <button
+                                    className={this.state.childrensOpenId.hasOwnProperty(person.id) ? 'openButton selected' : 'openButton'}
+                                    onClick={
+                                        ()=>{
+                                            if (this.state.childrensOpenId.hasOwnProperty(person.id)){
+                                                let openObj = this.state.childrensOpenId;
+                                                delete openObj[person.id];
+                                                this.setState({childrensOpenId:openObj})}
+                                                else
+                                            {
+                                                let openObj = this.state.childrensOpenId;
+                                                openObj[person.id] = 'open';
+                                                this.setState({childrensOpenId:openObj})
+                                            }
+                                            }
+                                    }>{this.state.childrensOpenId.hasOwnProperty(person.id) ? 'Закрыть' : 'Открыть' }</button>
+                            }
 
-                            {person.hasOwnProperty('childrens') && <button
-                                onClick={()=>{this.state.childrensOpenId !== person.id ?
-                                    this.setState({childrensOpenId: person.id}) :
-                                    this.setState({childrensOpenId: null}) } }>
-                                {this.state.childrensOpenId !== person.id ? ' Развернуть ' : ' Свернуть '}
-                            </button>}
 
-                            { this.state.childrensOpenId == person.id && <div className="person-childrens">
+                            { this.state.childrensOpenId.hasOwnProperty(person.id) && <div className="person-childrens">
 
                                 {
-                                    person.hasOwnProperty('childrens') && person.childrens.map((child) =>
+                                    person.hasOwnProperty('childrens') && person.childrens.map((seniorChild) =>
 
-                                        this.checkIsActiveCheck(child.isActive) &&
+                                      <ul key={seniorChild.id}>
+                                            {
+                                                this.checkIsActiveCheck(seniorChild.isActive) && <li className="seniorChild">{seniorChild.name} | {seniorChild.balance}
 
-                                        <div className="child" key={child.id}>{child.name}</div>
+                                                {
+                                                    seniorChild.hasOwnProperty('childrens') && seniorChild.childrens.map((juniorChild) =>
+
+                                                        <ul key={juniorChild.id}>
+                                                            {this.checkIsActiveCheck(juniorChild.isActive) &&
+
+                                                            <li className="juniorChild" key={juniorChild.id}>
+
+                                                                {juniorChild.name} | {juniorChild.balance}<br />
+
+
+                                                            </li>}
+                                                        </ul>
+                                                    )
+                                                }
+
+                                            </li>
+                                            }
+                                      </ul>
                                     )
                                 }
 
                             </div>}
 
-                        </div>
-
-
-
-                    )
-                )
-                }
+                        </li>)
+                    )}
+                </ul>
             </div>
 
         )

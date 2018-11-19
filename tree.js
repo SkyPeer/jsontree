@@ -21,4 +21,6 @@ function addChild(child) {
 }
 
 
-console.log(newTree);
+console.log(newTree[9]);
+
+console.log( (newTree[9].childrens.filter((item)=>{return item.isActive == true})).length);
